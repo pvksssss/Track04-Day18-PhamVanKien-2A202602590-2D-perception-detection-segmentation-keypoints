@@ -6,6 +6,8 @@ datasets/
 runs/
 runs_lab/
 autolabel/
+!submission/autolabel/
+!submission/autolabel/bus.txt
 tiger-pose-anat.yaml
 tiger-pose-mirror.yaml
 tiger-pose-mirror/
@@ -16,3 +18,11 @@ __pycache__/
 .ipynb_checkpoints/
 .venv*/
 .DS_Store
+
+# Local lab dependencies, downloads and execution tools
+.lab_deps/
+.lab_state/
+.lab_cache/
+
+# Kaggle export includes large weights, cache and dataset
+results.zip

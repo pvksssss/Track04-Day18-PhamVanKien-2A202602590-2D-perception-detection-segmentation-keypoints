@@ -32,6 +32,74 @@ fine-tune sẽ không dùng được để nộp.
 
 ---
 
+## Chạy trên Kaggle
+
+**Chỉ cần import `lab_2d_perception_student.ipynb`.** Không cần upload `scripts/`, `submission/`,
+weights `.pt`, ảnh mẫu hay dataset nếu đã bật Internet. Notebook tự tải weights/dataset;
+`bus.jpg` và `zidane.jpg` đi kèm package Ultralytics.
+
+1. Tạo Kaggle Notebook → **Import Notebook** → chọn file `.ipynb` trong repo này.
+2. Trong Settings, bật **Internet** và chọn **GPU** (ví dụ T4). Nếu tài khoản chưa được cấp quyền GPU/Internet,
+   hoàn tất yêu cầu xác minh của Kaggle trước khi chạy.
+3. Chạy Phần 0 trước; kiểm tra `device = cuda` và thông báo thư mục `/kaggle/working`.
+   Giữ `ultralytics==8.4.171`; không cài lại Torch/Torchvision tùy ý vì Kaggle đã cung cấp bộ CUDA tương thích.
+   Nếu sau cài đặt có thông báo yêu cầu restart kernel, restart rồi chạy lại các cell.
+4. Chạy lần lượt các phần còn lại. Phần 4B vẫn train **40 epoch, imgsz 640**, dùng GPU số 0;
+   không cần sử dụng đồng thời cả hai GPU nếu Kaggle cấp T4 x2.
+5. Cuối bài, `final_report()` tạo `/kaggle/working/submission/` và `submission.zip`, đồng thời hiện link tải ZIP.
+   Tải ZIP và giải nén để lấy `ket_qua.json` cùng `autolabel/bus.txt`.
+6. **Lưu phiên bản notebook có output** (Save Version / Save & Run All) rồi tải `.ipynb`.
+   Kiểm tra file tải về giữ các bảng, biểu đồ và log training; nếu bản tải thiếu output, lấy notebook đã thực thi
+   từ phiên bản đã lưu, không nộp bản chỉ có code. ZIP cũng có thể tải từ phần Output của phiên bản đó.
+7. Đưa notebook đã chạy và thư mục `submission/` lên GitHub public để nộp LMS theo `rubric.md`.
+
+Notebook tự chuyển sang `/kaggle/working` trên Kaggle; cache, weights, dataset và kết quả đều nằm ở nơi ghi được.
+Không ghi vào `/kaggle/input` (chỉ đọc). Colab và local giữ nguyên thư mục làm việc/cache hiện tại.
+Lưu/tải kết quả trước khi kết thúc phiên Kaggle vì file của phiên tương tác không phải nơi lưu trữ lâu dài.
+
+**Lưu ý về chạy lại:** notebook trong repo hiện giữ nguyên output của phiên Kaggle public
+[`track4-d3 — Version 3`](https://www.kaggle.com/code/b22dckh063phmvnkin/track4-d3?scriptVersionId=355346666), script version `355346666`.
+Q2/Q11 và đoạn giải thích 4C đã được rà soát theo kết quả phiên đó; thiết lập thư mục config được sửa sau phiên chạy để tránh
+cảnh báo fallback sang `/tmp`. Các chỉnh sửa sau chạy có metadata ghi nhận trong notebook; không sửa log/hình gốc
+và không train lại để hoàn thiện câu trả lời. Nếu chạy lại, rà soát các câu trả lời có số liệu/hình theo kết quả mới.
+Cell 4B gọi train mỗi lần được chạy; Save & Run All cũng sẽ chạy training lại.
+
+Không có Internet thì chỉ import notebook là chưa đủ: cần chuẩn bị weights, dataset và bộ thư viện offline riêng.
+Hướng dẫn này dùng **GPU + Internet**, không bao gồm chế độ offline.
+
+---
+
+## Kết quả bài làm hiện tại
+
+Bằng chứng: notebook đã thực thi và JSON/nhãn gốc Kaggle Version 3. Archive `results.zip` cũ thuộc Version 1, không dùng làm bằng chứng cho 4C.
+Hai model đều train trên Tesla T4, 40 epoch, `imgsz=640`; log training gốc được giữ trong notebook.
+
+| Chỉ số | Kết quả Kaggle |
+|---|---:|
+| Box mAP50–95 | 0.91395 |
+| Pose mAP50 | 0.99500 |
+| Pose mAP50–95 | 0.43574 |
+| OKS trung bình trên 53 ảnh val | 0.726 |
+| Không phát hiện được hổ | 0/53 |
+| Ảnh có OKS tăng > 0.02 khi hoán đổi trái–phải | 9/53 |
+| Thời gian train 4B ghi trong báo cáo | 3.8 phút |
+
+Các hàm bắt buộc và auto-label đều có trạng thái `ok`; Q1–Q12 đã điền đủ và Q2/Q11 đã được sửa cho khớp phiên Kaggle.
+Bonus `average_precision` và 4C đã chạy; giải thích bảng 4C nằm trong notebook. Bài tập về nhà bổ sung chưa thực hiện.
+Chỉ số 9/53 là dấu hiệu nghi nhầm trái–phải, không phải kết luận chắc chắn về lỗi nhãn.
+
+| Model 4C | Pose mAP50–95 — val gốc | Pose mAP50–95 — val lật gương |
+|---|---:|---:|
+| Giải phẫu | 0.43574 | 0.42535 |
+| Đồng nhất | 0.41472 | 0.27513 |
+
+Chênh lệch 0.02102 trên val gốc tăng lên 0.15022 trên val lật gương: tập val thiên lệch hướng có thể che vấn đề trái/phải.
+
+Các file nộp: notebook này **còn nguyên output**, `submission/ket_qua.json`, `submission/autolabel/bus.txt`.
+`submission.zip` được đóng gói lại từ bộ file đã rà soát; không đưa archive lớn `results.zip`, weights hay dataset lên GitHub.
+
+---
+
 ## Lộ trình 120 phút
 
 | Phần | Nội dung | Bạn tự code | Mảnh ghép cho camera cổng | Phút |
